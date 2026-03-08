@@ -323,7 +323,8 @@
           opt.textContent = s.name;
           ui.subjectSelect.appendChild(opt);
         });
-        ui.subjectSelect.value = selected || state.data.subjects[0].id;
+        const selectedExists = state.data.subjects.some(s => s.id === selected);
+        ui.subjectSelect.value = selectedExists ? selected : state.data.subjects[0].id;
       }
 
       function renderProfile() {
@@ -363,10 +364,15 @@
           const awakened = hours >= MASTER_HOURS;
           const row = document.createElement('div');
           row.className = 'p-3 rounded bg-slate-100 dark:bg-slate-800';
+          const canManage = s.id !== 'geral';
           row.innerHTML = `
             <div class="flex justify-between text-sm items-center gap-2">
-              <span class="font-semibold">${s.name}</span>
-              <span class="text-xs ${awakened ? 'text-amber-300' : 'text-slate-500'}">${awakened ? 'Desperto • Mestre' : `Nível de Habilidade ${skillLevel}`}</span>
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="font-semibold truncate">${s.name}</span>
+                <button data-action="edit-subject" data-id="${s.id}" class="h-7 w-7 rounded-md bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-200 text-sm font-bold ${canManage ? 'hover:bg-indigo-200 dark:hover:bg-indigo-800' : 'opacity-40 cursor-not-allowed'}" title="Editar matéria" ${canManage ? '' : 'disabled'}>✏️</button>
+                <button data-action="delete-subject" data-id="${s.id}" class="h-7 w-7 rounded-md bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-200 text-sm font-bold ${canManage ? 'hover:bg-rose-200 dark:hover:bg-rose-800' : 'opacity-40 cursor-not-allowed'}" title="Excluir matéria" ${canManage ? '' : 'disabled'}>🗑️</button>
+              </div>
+              <span class="text-xs text-right ${awakened ? 'text-amber-300' : 'text-slate-500'}">${awakened ? 'Desperto • Mestre' : `Nível de Habilidade ${skillLevel}`}</span>
             </div>
             <p class="text-xs mt-1 text-slate-500">${hours.toFixed(1)}h / ${MASTER_HOURS.toLocaleString('pt-BR')}h</p>
             <div class="w-full h-2 bg-slate-300 dark:bg-slate-700 rounded mt-1 overflow-hidden">
@@ -376,6 +382,65 @@
           ui.subjectStats.appendChild(row);
         });
       }
+
+      ui.subjectStats.onclick = (event) => {
+        const target = event.target.closest('button[data-action]');
+        if (!target) return;
+
+        const subjectId = target.dataset.id;
+        const subject = state.data.subjects.find(s => s.id === subjectId);
+        if (!subject || subject.id === 'geral') return;
+
+        if (target.dataset.action === 'delete-subject') {
+          const confirmed = confirm(`Tem certeza que deseja excluir a matéria "${subject.name}"?`);
+          if (!confirmed) return;
+          state.data.subjects = state.data.subjects.filter(s => s.id !== subject.id);
+          state.data.sessions = state.data.sessions.map(session => (
+            session.subjectId === subject.id ? { ...session, subjectId: 'geral' } : session
+          ));
+          save();
+          renderAll();
+          return;
+        }
+
+        if (target.dataset.action === 'edit-subject') {
+          const nextName = prompt('Novo nome da matéria:', subject.name);
+          if (nextName === null) return;
+          const trimmedName = nextName.trim();
+          if (!trimmedName) {
+            Utils.toast('O nome da matéria não pode ficar vazio.');
+            return;
+          }
+
+          const colorPicker = document.createElement('input');
+          colorPicker.type = 'color';
+          colorPicker.value = subject.color;
+          colorPicker.style.position = 'fixed';
+          colorPicker.style.left = '-9999px';
+          document.body.appendChild(colorPicker);
+
+          colorPicker.addEventListener('input', () => {
+            subject.color = colorPicker.value;
+          });
+
+          colorPicker.addEventListener('change', () => {
+            subject.name = trimmedName;
+            save();
+            renderAll();
+            colorPicker.remove();
+          }, { once: true });
+
+          colorPicker.addEventListener('blur', () => {
+            subject.name = trimmedName;
+            save();
+            renderAll();
+            colorPicker.remove();
+          }, { once: true });
+
+          colorPicker.click();
+          colorPicker.focus();
+        }
+      };
 
       function dueFlashcards() {
         const now = Date.now();
@@ -534,10 +599,13 @@
       ui.addSubjectBtn.onclick = () => {
         const name = ui.newSubjectName.value.trim();
         if (!name) return;
-        state.data.subjects.push({ id: crypto.randomUUID(), name, color: ui.newSubjectColor.value });
+        const newSubject = { id: crypto.randomUUID(), name, color: ui.newSubjectColor.value };
+        state.data.subjects.push(newSubject);
+        ui.subjectSelect.value = newSubject.id;
         ui.newSubjectName.value = '';
         save();
         renderAll();
+        ui.subjectSelect.value = newSubject.id;
       };
 
       ui.addFlashBtn.onclick = () => {
