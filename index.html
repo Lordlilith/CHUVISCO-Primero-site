@@ -411,34 +411,19 @@
             Utils.toast('O nome da matéria não pode ficar vazio.');
             return;
           }
+          const nextColorInput = prompt('Nova cor da matéria (formato HEX, ex: #6366f1):', subject.color);
+          if (nextColorInput === null) return;
+          const trimmedColor = nextColorInput.trim();
+          const isHexColor = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmedColor);
+          if (!isHexColor) {
+            Utils.toast('Cor inválida. Use o formato HEX, exemplo: #6366f1.');
+            return;
+          }
 
-          const colorPicker = document.createElement('input');
-          colorPicker.type = 'color';
-          colorPicker.value = subject.color;
-          colorPicker.style.position = 'fixed';
-          colorPicker.style.left = '-9999px';
-          document.body.appendChild(colorPicker);
-
-          colorPicker.addEventListener('input', () => {
-            subject.color = colorPicker.value;
-          });
-
-          colorPicker.addEventListener('change', () => {
-            subject.name = trimmedName;
-            save();
-            renderAll();
-            colorPicker.remove();
-          }, { once: true });
-
-          colorPicker.addEventListener('blur', () => {
-            subject.name = trimmedName;
-            save();
-            renderAll();
-            colorPicker.remove();
-          }, { once: true });
-
-          colorPicker.click();
-          colorPicker.focus();
+          subject.name = trimmedName;
+          subject.color = trimmedColor;
+          save();
+          renderAll();
         }
       };
 
@@ -450,10 +435,11 @@
       function renderFlash() {
         const due = dueFlashcards();
         if (!due.length) {
+          state.flashIndex = 0;
           ui.flashReview.innerHTML = '<p class="text-sm text-slate-500">Sem revisão pendente. Crie mais flashcards 🚀</p>';
           return;
         }
-        if (state.flashIndex >= due.length) state.flashIndex = 0;
+        if (state.flashIndex < 0 || state.flashIndex >= due.length) state.flashIndex = 0;
         const card = due[state.flashIndex];
         ui.flashReview.innerHTML = `
           <p class="text-xs text-slate-500 mb-1">Card ${state.flashIndex + 1}/${due.length}</p>
@@ -581,9 +567,18 @@
       ui.startBtn.onclick = () => { state.running = true; };
       ui.pauseBtn.onclick = () => {
         state.running = false;
+        if (state.mode === 'pomodoro' && state.cycle === 'focus') {
+          const configuredFocusSeconds = Math.max(1, Number(state.data.settings.focus) || 30) * 60;
+          const elapsedFocusSeconds = Math.max(0, configuredFocusSeconds - Math.max(0, state.seconds));
+          if (elapsedFocusSeconds > 0) {
+            saveSession(elapsedFocusSeconds, 'pomodoro');
+            state.seconds = configuredFocusSeconds;
+          }
+        }
         if (state.mode === 'free' && state.freeSeconds > 0) {
-          saveSession(state.freeSeconds, 'free');
+          const elapsedFreeSeconds = state.freeSeconds;
           state.freeSeconds = 0;
+          saveSession(elapsedFreeSeconds, 'free');
         }
         save();
         renderAll();
@@ -629,6 +624,7 @@
         btn.onclick = () => {
           const due = dueFlashcards();
           if (!due.length) return;
+          if (state.flashIndex < 0 || state.flashIndex >= due.length) state.flashIndex = 0;
           const card = due[state.flashIndex];
           const g = btn.dataset.grade;
           if (g === 'again') card.interval = 1;
