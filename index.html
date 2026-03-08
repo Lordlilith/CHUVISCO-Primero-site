@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StudyForge — Assistente de Estudos Gamificado</title>
+  <title>StudyForge — Sistema de Crescimento de Rank</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = { darkMode: 'class' };
@@ -15,7 +15,7 @@
       <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap gap-3 items-center justify-between">
         <div>
           <h1 class="text-2xl font-black tracking-tight">⚔️ StudyForge</h1>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Auxiliar de estudos com gamificação total (offline/local)</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Progressão de Caçador com maestria e economia de cristais</p>
         </div>
         <div class="flex flex-wrap gap-2">
           <button id="themeBtn" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm font-semibold">🌙 Tema</button>
@@ -49,9 +49,9 @@
           </div>
 
           <div class="grid md:grid-cols-3 gap-3 mb-4">
-            <input id="newSubjectName" type="text" placeholder="Nova matéria" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800" />
+            <input id="newSubjectName" type="text" placeholder="Nova habilidade (matéria)" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800" />
             <input id="newSubjectColor" type="color" value="#6366f1" class="h-11 rounded-lg border border-slate-300 dark:border-slate-700" />
-            <button id="addSubjectBtn" class="px-3 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Adicionar Matéria</button>
+            <button id="addSubjectBtn" class="px-3 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Adicionar Skill</button>
           </div>
 
           <div class="text-center py-8 rounded-xl bg-slate-100 dark:bg-slate-800">
@@ -65,20 +65,6 @@
             <button id="pauseBtn" class="px-4 py-2 rounded-lg bg-amber-500 text-white font-semibold">Pausar + Salvar</button>
             <button id="resetBtn" class="px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold">Reset</button>
           </div>
-        </article>
-
-        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <h2 class="text-xl font-bold mb-3">📅 Plano de Estudos (Quests)</h2>
-          <div class="grid sm:grid-cols-3 gap-3 mb-3">
-            <input id="taskTitle" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800" placeholder="Ex: Revisar geometria" />
-            <select id="taskDifficulty" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <option value="40">Fácil (+40 XP)</option>
-              <option value="80">Médio (+80 XP)</option>
-              <option value="120">Difícil (+120 XP)</option>
-            </select>
-            <button id="addTaskBtn" class="px-3 py-2 rounded-lg bg-cyan-600 text-white font-semibold">Adicionar Quest</button>
-          </div>
-          <ul id="taskList" class="space-y-2"></ul>
         </article>
 
         <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
@@ -104,12 +90,13 @@
       <aside class="space-y-6">
         <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <h2 class="text-xl font-bold">🏆 Perfil Gamer</h2>
-          <p id="levelLabel" class="text-sm text-slate-500 mt-1">Nível 1</p>
-          <p id="xpLabel" class="text-3xl font-black text-indigo-600">XP 0</p>
+          <p id="rankLabel" class="text-sm mt-1 font-semibold text-slate-400">Rank E</p>
+          <p id="xpLabel" class="text-3xl font-black text-indigo-600">XP Total 0</p>
           <div class="w-full h-3 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-2">
             <div id="xpBar" class="h-full bg-indigo-600" style="width: 0%"></div>
           </div>
-          <p id="nextLevelLabel" class="text-xs text-slate-500 mt-2">0 / 300 XP</p>
+          <p id="nextRankLabel" class="text-xs text-slate-500 mt-2">0 / 2000 XP para Rank D</p>
+          <p class="mt-3 text-lg font-bold text-cyan-400">💎 Cristais: <span id="crystalsLabel">0</span></p>
           <div class="grid grid-cols-2 gap-2 mt-4 text-sm">
             <div class="p-2 rounded bg-slate-100 dark:bg-slate-800">🔥 Streak: <span id="streakLabel">0</span></div>
             <div class="p-2 rounded bg-slate-100 dark:bg-slate-800">⏱️ Hoje: <span id="todayLabel">0m</span></div>
@@ -121,6 +108,11 @@
         <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <h2 class="text-xl font-bold mb-3">🗺️ Progresso por Matéria</h2>
           <div id="subjectStats" class="space-y-2"></div>
+        </article>
+
+        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <h2 class="text-xl font-bold mb-3">📜 Histórico de Combate</h2>
+          <ul id="activityLog" class="space-y-2 text-sm"></ul>
         </article>
 
         <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
@@ -142,11 +134,22 @@
     </main>
   </div>
 
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
   <script>
     (() => {
       const KEY = 'studyforge_v2';
       const THEME_KEY = 'studyforge_theme';
-      const LEVEL_BASE = 300;
+      const MASTER_HOURS = 10000;
+
+      const RANKS = [
+        { name: 'E', min: 0, max: 2000, color: 'text-slate-400', bar: 'bg-slate-500', next: 'D' },
+        { name: 'D', min: 2001, max: 10000, color: 'text-emerald-400', bar: 'bg-emerald-500', next: 'C' },
+        { name: 'C', min: 10001, max: 50000, color: 'text-cyan-400', bar: 'bg-cyan-500', next: 'B' },
+        { name: 'B', min: 50001, max: 200000, color: 'text-indigo-400', bar: 'bg-indigo-500', next: 'A' },
+        { name: 'A', min: 200001, max: 1000000, color: 'text-fuchsia-400', bar: 'bg-fuchsia-500', next: 'S' },
+        { name: 'S', min: 1000001, max: Infinity, color: 'text-amber-300 animate-pulse', bar: 'bg-amber-400', next: null }
+      ];
 
       const defaultData = {
         subjects: [
@@ -154,17 +157,33 @@
           { id: 'mat', name: 'Matemática', color: '#ef4444' }
         ],
         sessions: [],
-        tasks: [],
         flashcards: [],
         xp: 0,
+        crystals: 0,
+        flashReviews: 0,
         settings: { focus: 30, pause: 10 },
-        achievements: []
+        achievements: [],
+        activityLog: []
+      };
+
+      const normalizeData = (raw) => {
+        const data = raw && typeof raw === 'object' ? raw : {};
+        return {
+          ...structuredClone(defaultData),
+          ...data,
+          subjects: Array.isArray(data.subjects) && data.subjects.length ? data.subjects : structuredClone(defaultData.subjects),
+          sessions: Array.isArray(data.sessions) ? data.sessions : [],
+          flashcards: Array.isArray(data.flashcards) ? data.flashcards : [],
+          achievements: Array.isArray(data.achievements) ? data.achievements : [],
+          activityLog: Array.isArray(data.activityLog) ? data.activityLog.slice(0, 5) : [],
+          settings: { ...defaultData.settings, ...(data.settings || {}) }
+        };
       };
 
       const load = () => {
         try {
           const raw = localStorage.getItem(KEY);
-          return raw ? JSON.parse(raw) : structuredClone(defaultData);
+          return normalizeData(raw ? JSON.parse(raw) : structuredClone(defaultData));
         } catch {
           return structuredClone(defaultData);
         }
@@ -190,11 +209,10 @@
         newSubjectName: $('newSubjectName'), newSubjectColor: $('newSubjectColor'), addSubjectBtn: $('addSubjectBtn'),
         cycleLabel: $('cycleLabel'), timerText: $('timerText'), motivation: $('motivation'),
         startBtn: $('startBtn'), pauseBtn: $('pauseBtn'), resetBtn: $('resetBtn'),
-        taskTitle: $('taskTitle'), taskDifficulty: $('taskDifficulty'), addTaskBtn: $('addTaskBtn'), taskList: $('taskList'),
         flashFront: $('flashFront'), flashBack: $('flashBack'), addFlashBtn: $('addFlashBtn'), showAnswerBtn: $('showAnswerBtn'), flashReview: $('flashReview'),
-        levelLabel: $('levelLabel'), xpLabel: $('xpLabel'), xpBar: $('xpBar'), nextLevelLabel: $('nextLevelLabel'),
+        rankLabel: $('rankLabel'), xpLabel: $('xpLabel'), xpBar: $('xpBar'), nextRankLabel: $('nextRankLabel'), crystalsLabel: $('crystalsLabel'),
         streakLabel: $('streakLabel'), todayLabel: $('todayLabel'), weekLabel: $('weekLabel'), sessionsLabel: $('sessionsLabel'),
-        subjectStats: $('subjectStats'), achievementList: $('achievementList'),
+        subjectStats: $('subjectStats'), achievementList: $('achievementList'), activityLog: $('activityLog'), toastContainer: $('toastContainer'),
         exportBtn: $('exportBtn'), importInput: $('importInput'), resetDataBtn: $('resetDataBtn')
       };
 
@@ -206,7 +224,45 @@
         },
         dateKey(date = new Date()) { return date.toISOString().slice(0, 10); },
         minutesLabel(sec) { return `${Math.floor(sec / 60)}m`; },
-        addXP(value) { state.data.xp += value; unlockAchievements(); save(); renderAll(); }
+        hours(sec) { return sec / 3600; },
+        nowTime() {
+          return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        },
+        toast(message) {
+          const t = document.createElement('div');
+          t.className = 'bg-slate-900/95 text-slate-100 border border-slate-700 px-4 py-2 rounded-lg shadow-lg text-sm animate-pulse';
+          t.textContent = message;
+          ui.toastContainer.appendChild(t);
+          setTimeout(() => t.remove(), 2800);
+        },
+        addLog(message) {
+          state.data.activityLog.unshift(`${Utils.nowTime()} - ${message}`);
+          state.data.activityLog = state.data.activityLog.slice(0, 5);
+        },
+        getRank(xp) {
+          return RANKS.find(r => xp >= r.min && xp <= r.max) || RANKS[0];
+        },
+        addXP(value, sourceText = '') {
+          if (value <= 0) return;
+          const previousRank = Utils.getRank(state.data.xp).name;
+          state.data.xp += value;
+          if (sourceText) Utils.addLog(`${sourceText} (+${value} XP)`);
+          const currentRank = Utils.getRank(state.data.xp).name;
+          if (currentRank !== previousRank) {
+            Utils.toast(`Subiu de Rank! Agora você é Rank ${currentRank}`);
+          }
+          unlockAchievements();
+          save();
+          renderAll();
+        },
+        addCrystals(value, reason = '') {
+          if (value <= 0) return;
+          state.data.crystals += value;
+          Utils.toast(`Capa de Cristais Recebida! (+${value} 💎)`);
+          if (reason) Utils.addLog(`${reason} (+${value} 💎)`);
+          save();
+          renderAll();
+        }
       };
 
       const Stats = {
@@ -219,6 +275,9 @@
             const d = new Date(s.date);
             return (now - d) <= days * 86400000;
           }).reduce((a, s) => a + s.duration, 0);
+        },
+        totalSeconds() {
+          return state.data.sessions.reduce((a, s) => a + s.duration, 0);
         },
         streak() {
           const days = new Set(state.data.sessions.map(s => s.date.slice(0, 10)));
@@ -240,33 +299,23 @@
         }
       };
 
-      function levelInfo(xp) {
-        let level = 1;
-        let needed = LEVEL_BASE;
-        let acc = xp;
-        while (acc >= needed) {
-          acc -= needed;
-          level++;
-          needed = Math.floor(needed * 1.2);
-        }
-        return { level, progress: acc, needed };
-      }
-
       function unlockAchievements() {
         const unlock = (id, label) => {
           if (!state.data.achievements.includes(id)) {
             state.data.achievements.push(id);
-            alert(`🏅 Nova conquista: ${label}`);
+            Utils.toast(`Conquista Desbloqueada: ${label}`);
           }
         };
-        if (state.data.sessions.length >= 1) unlock('first_session', 'Primeira Sessão');
-        if (Stats.totalLastDays(7) >= 3 * 3600) unlock('3h_week', '3 horas na semana');
-        if (Stats.streak() >= 3) unlock('streak_3', 'Streak de 3 dias');
-        if (state.data.flashcards.length >= 10) unlock('flash_10', '10 flashcards criados');
-        if (state.data.tasks.filter(t => t.done).length >= 5) unlock('task_5', '5 quests completas');
+        if (state.data.sessions.length >= 1) unlock('first_blood', 'First Blood');
+        if (Stats.streak() >= 7) unlock('iron_will', 'Determinação de Ferro');
+        if (Stats.totalSeconds() >= 3600) unlock('first_step', 'O Primeiro Passo');
+        if (Stats.totalSeconds() >= 360000) unlock('war_veteran', 'Veterano de Guerra');
+        if (Stats.totalSeconds() >= 3600000) unlock('sovereign_path', 'Caminho do Soberano');
+        if (state.data.flashcards.length >= 100) unlock('librarian', 'Bibliotecário');
       }
 
       function renderSubjects() {
+        const selected = ui.subjectSelect.value;
         ui.subjectSelect.innerHTML = '';
         state.data.subjects.forEach(s => {
           const opt = document.createElement('option');
@@ -274,16 +323,30 @@
           opt.textContent = s.name;
           ui.subjectSelect.appendChild(opt);
         });
+        ui.subjectSelect.value = selected || state.data.subjects[0].id;
       }
 
       function renderProfile() {
         const xp = state.data.xp;
-        const { level, progress, needed } = levelInfo(xp);
-        const pct = Math.min(100, (progress / needed) * 100);
-        ui.levelLabel.textContent = `Nível ${level}`;
-        ui.xpLabel.textContent = `XP ${xp}`;
-        ui.nextLevelLabel.textContent = `${progress} / ${needed} XP`;
-        ui.xpBar.style.width = `${pct}%`;
+        const rank = Utils.getRank(xp);
+        ui.rankLabel.className = `text-sm mt-1 font-semibold ${rank.color}`;
+        ui.rankLabel.textContent = `Rank ${rank.name}`;
+        ui.xpLabel.textContent = `XP Total ${xp}`;
+        ui.crystalsLabel.textContent = state.data.crystals;
+
+        if (rank.next) {
+          const nextRank = RANKS.find(r => r.name === rank.next);
+          const currentMin = rank.min;
+          const currentMax = rank.max;
+          const pct = Math.min(100, ((xp - currentMin) / (currentMax - currentMin + 1)) * 100);
+          ui.nextRankLabel.textContent = `${xp} / ${currentMax} XP para Rank ${nextRank.name}`;
+          ui.xpBar.style.width = `${pct}%`;
+        } else {
+          ui.nextRankLabel.textContent = 'Rank máximo alcançado';
+          ui.xpBar.style.width = '100%';
+        }
+
+        ui.xpBar.className = `h-full ${rank.bar}`;
         ui.todayLabel.textContent = Utils.minutesLabel(Stats.totalByDate(Utils.dateKey()));
         ui.weekLabel.textContent = Utils.minutesLabel(Stats.totalLastDays(7));
         ui.streakLabel.textContent = Stats.streak();
@@ -292,38 +355,25 @@
 
       function renderSubjectStats() {
         ui.subjectStats.innerHTML = '';
-        const total = state.data.sessions.reduce((a, s) => a + s.duration, 0) || 1;
         state.data.subjects.forEach(s => {
           const sec = Stats.subjectSeconds(s.id);
-          const pct = Math.round((sec / total) * 100);
+          const hours = Utils.hours(sec);
+          const pct = Math.min(100, (hours / MASTER_HOURS) * 100);
+          const skillLevel = Math.floor(hours / 100) + 1;
+          const awakened = hours >= MASTER_HOURS;
           const row = document.createElement('div');
-          row.className = 'p-2 rounded bg-slate-100 dark:bg-slate-800';
+          row.className = 'p-3 rounded bg-slate-100 dark:bg-slate-800';
           row.innerHTML = `
-            <div class="flex justify-between text-sm"><span>${s.name}</span><span>${Utils.minutesLabel(sec)} (${pct}%)</span></div>
+            <div class="flex justify-between text-sm items-center gap-2">
+              <span class="font-semibold">${s.name}</span>
+              <span class="text-xs ${awakened ? 'text-amber-300' : 'text-slate-500'}">${awakened ? 'Desperto • Mestre' : `Nível de Habilidade ${skillLevel}`}</span>
+            </div>
+            <p class="text-xs mt-1 text-slate-500">${hours.toFixed(1)}h / ${MASTER_HOURS.toLocaleString('pt-BR')}h</p>
             <div class="w-full h-2 bg-slate-300 dark:bg-slate-700 rounded mt-1 overflow-hidden">
               <div class="h-full" style="width:${pct}%;background:${s.color}"></div>
             </div>
           `;
           ui.subjectStats.appendChild(row);
-        });
-      }
-
-      function renderTasks() {
-        ui.taskList.innerHTML = '';
-        state.data.tasks.forEach(t => {
-          const li = document.createElement('li');
-          li.className = 'p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2';
-          li.innerHTML = `
-            <div>
-              <p class="font-semibold ${t.done ? 'line-through text-slate-400' : ''}">${t.title}</p>
-              <p class="text-xs text-slate-500">Recompensa: ${t.xp} XP</p>
-            </div>
-            <div class="flex gap-2">
-              <button data-id="${t.id}" class="complete-task px-2 py-1 rounded bg-emerald-600 text-white text-xs">Concluir</button>
-              <button data-id="${t.id}" class="delete-task px-2 py-1 rounded bg-rose-600 text-white text-xs">Excluir</button>
-            </div>
-          `;
-          ui.taskList.appendChild(li);
         });
       }
 
@@ -349,14 +399,25 @@
 
       function renderAchievements() {
         const map = {
-          first_session: '🎯 Primeira Sessão',
-          '3h_week': '📈 3h na semana',
-          streak_3: '🔥 Streak de 3 dias',
-          flash_10: '🧠 10 flashcards',
-          task_5: '✅ 5 quests completas'
+          first_blood: '🩸 First Blood: Primeira sessão finalizada',
+          iron_will: '🔥 Determinação de Ferro: Streak de 7 dias',
+          first_step: '⏳ O Primeiro Passo: 1 hora total',
+          war_veteran: '⚔️ Veterano de Guerra: 100 horas',
+          sovereign_path: '👑 Caminho do Soberano: 1.000 horas',
+          librarian: '📚 Bibliotecário: 100 flashcards criados'
         };
         ui.achievementList.innerHTML = Object.entries(map)
           .map(([id, label]) => `<li class="p-2 rounded ${state.data.achievements.includes(id) ? 'bg-emerald-100 dark:bg-emerald-900/40' : 'bg-slate-100 dark:bg-slate-800 opacity-60'}">${label}</li>`)
+          .join('');
+      }
+
+      function renderActivityLog() {
+        if (!state.data.activityLog.length) {
+          ui.activityLog.innerHTML = '<li class="p-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">Sem registros recentes.</li>';
+          return;
+        }
+        ui.activityLog.innerHTML = state.data.activityLog
+          .map(item => `<li class="p-2 rounded bg-slate-100 dark:bg-slate-800">${item}</li>`)
           .join('');
       }
 
@@ -374,21 +435,36 @@
         renderSubjects();
         renderProfile();
         renderSubjectStats();
-        renderTasks();
         renderFlash();
         renderAchievements();
+        renderActivityLog();
         renderTimer();
       }
 
-      function saveSession(seconds) {
+      function saveSession(seconds, mode = 'pomodoro') {
         if (seconds <= 0) return;
+        const subjectId = ui.subjectSelect.value || 'geral';
+        const subject = state.data.subjects.find(s => s.id === subjectId);
         state.data.sessions.push({
           id: crypto.randomUUID(),
           date: new Date().toISOString(),
-          subjectId: ui.subjectSelect.value || 'geral',
+          subjectId,
           duration: seconds
         });
-        Utils.addXP(Math.floor(seconds / 30));
+
+        const gainedXP = Math.floor(seconds / 30);
+        const minutes = Math.floor(seconds / 60);
+        Utils.addXP(gainedXP, `Você dominou ${subject?.name || 'Geral'} por ${minutes}min`);
+
+        if (mode === 'pomodoro') {
+          Utils.addCrystals(10, 'Pomodoro de Foco concluído');
+        } else {
+          const crystalGain = Math.floor(seconds / 600) * 5;
+          if (crystalGain > 0) {
+            Utils.addCrystals(crystalGain, `Cronômetro Livre por ${minutes}min`);
+          }
+        }
+
         unlockAchievements();
       }
 
@@ -411,8 +487,7 @@
           state.seconds--;
           if (state.seconds <= 0) {
             if (state.cycle === 'focus') {
-              saveSession(state.data.settings.focus * 60);
-              Utils.addXP(35);
+              saveSession(state.data.settings.focus * 60, 'pomodoro');
             }
             state.cycle = state.cycle === 'focus' ? 'break' : 'focus';
             resetTimerBase();
@@ -442,7 +517,7 @@
       ui.pauseBtn.onclick = () => {
         state.running = false;
         if (state.mode === 'free' && state.freeSeconds > 0) {
-          saveSession(state.freeSeconds);
+          saveSession(state.freeSeconds, 'free');
           state.freeSeconds = 0;
         }
         save();
@@ -465,32 +540,6 @@
         renderAll();
       };
 
-      ui.addTaskBtn.onclick = () => {
-        const title = ui.taskTitle.value.trim();
-        if (!title) return;
-        state.data.tasks.unshift({ id: crypto.randomUUID(), title, xp: Number(ui.taskDifficulty.value), done: false });
-        ui.taskTitle.value = '';
-        save();
-        renderTasks();
-      };
-
-      ui.taskList.onclick = (e) => {
-        const id = e.target.dataset.id;
-        if (!id) return;
-        const task = state.data.tasks.find(t => t.id === id);
-        if (!task) return;
-        if (e.target.classList.contains('complete-task') && !task.done) {
-          task.done = true;
-          Utils.addXP(task.xp);
-        }
-        if (e.target.classList.contains('delete-task')) {
-          state.data.tasks = state.data.tasks.filter(t => t.id !== id);
-        }
-        unlockAchievements();
-        save();
-        renderAll();
-      };
-
       ui.addFlashBtn.onclick = () => {
         const front = ui.flashFront.value.trim();
         const back = ui.flashBack.value.trim();
@@ -498,7 +547,7 @@
         state.data.flashcards.push({ id: crypto.randomUUID(), front, back, interval: 1, nextReview: Date.now() });
         ui.flashFront.value = '';
         ui.flashBack.value = '';
-        Utils.addXP(20);
+        Utils.addXP(20, 'Forjou um novo flashcard');
         save();
         renderAll();
       };
@@ -519,7 +568,11 @@
           if (g === 'good') card.interval = Math.max(2, Math.floor(card.interval * 2));
           if (g === 'easy') card.interval = Math.max(3, Math.floor(card.interval * 3));
           card.nextReview = Date.now() + card.interval * 86400000;
-          Utils.addXP(g === 'again' ? 5 : g === 'hard' ? 10 : g === 'good' ? 20 : 30);
+          Utils.addXP(g === 'again' ? 5 : g === 'hard' ? 10 : g === 'good' ? 20 : 30, `Revisou flashcard (${g})`);
+          state.data.flashReviews += 1;
+          if (state.data.flashReviews % 5 === 0) {
+            Utils.addCrystals(2, 'Revisão de 5 flashcards');
+          }
           state.flashShowingAnswer = false;
           state.flashIndex++;
           save();
@@ -565,11 +618,11 @@
         const reader = new FileReader();
         reader.onload = () => {
           try {
-            state.data = JSON.parse(String(reader.result));
+            state.data = normalizeData(JSON.parse(String(reader.result)));
             save();
             renderAll();
           } catch {
-            alert('Arquivo inválido.');
+            Utils.toast('Arquivo inválido para importação.');
           }
         };
         reader.readAsText(file);
