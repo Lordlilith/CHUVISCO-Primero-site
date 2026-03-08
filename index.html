@@ -3,125 +3,139 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Assistente de Estudos Definitivo</title>
+  <title>StudyForge — Assistente de Estudos Gamificado</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['Inter', 'ui-sans-serif', 'system-ui']
-          }
-        }
-      }
-    }
+    tailwind.config = { darkMode: 'class' };
   </script>
 </head>
-<body class="h-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-display transition-colors duration-200">
+<body class="h-full bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
   <div id="app" class="min-h-full">
-    <header class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <header class="sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap gap-3 items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold">Assistente de Estudos Definitivo</h1>
-          <p class="text-sm text-slate-500 dark:text-slate-400">100% local • produtividade sem distrações</p>
+          <h1 class="text-2xl font-black tracking-tight">⚔️ StudyForge</h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Auxiliar de estudos com gamificação total (offline/local)</p>
         </div>
-        <div class="flex gap-2">
-          <button id="toggleThemeBtn" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm font-medium">🌙 Dark Mode</button>
-          <button id="toggleFocusModeBtn" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-500">🎯 Modo Foco</button>
+        <div class="flex flex-wrap gap-2">
+          <button id="themeBtn" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm font-semibold">🌙 Tema</button>
+          <button id="focusModeBtn" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold">🎯 Modo Foco</button>
+          <button id="rouletteBtn" class="px-4 py-2 rounded-lg bg-fuchsia-600 text-white text-sm font-semibold">🎲 Roleta</button>
         </div>
       </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid lg:grid-cols-3 gap-6">
-      <section id="timerPanel" class="lg:col-span-2 space-y-6">
-        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+    <main class="max-w-7xl mx-auto p-4 grid lg:grid-cols-3 gap-6">
+      <section class="lg:col-span-2 space-y-6">
+        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <div class="flex flex-wrap gap-2 mb-4">
-            <button id="pomodoroModeBtn" class="mode-btn px-4 py-2 rounded-lg bg-indigo-600 text-white">Pomodoro</button>
-            <button id="freeModeBtn" class="mode-btn px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700">Cronômetro Livre</button>
+            <button id="modePomodoro" class="mode-btn px-3 py-2 rounded-lg bg-indigo-600 text-white">Pomodoro</button>
+            <button id="modeFree" class="mode-btn px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-700">Cronômetro livre</button>
           </div>
 
-          <div class="grid md:grid-cols-2 gap-4 mb-6">
-            <label class="block">
-              <span class="text-sm font-medium">Matéria / Tópico atual</span>
-              <select id="subjectSelect" class="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2"></select>
+          <div class="grid md:grid-cols-4 gap-3 mb-4">
+            <label class="md:col-span-2 block">
+              <span class="text-sm font-semibold">Matéria</span>
+              <select id="subjectSelect" class="mt-1 w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"></select>
             </label>
-
-            <div class="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
-              <p class="text-sm font-medium mb-2">Adicionar nova matéria</p>
-              <div class="flex gap-2">
-                <input id="newSubjectInput" type="text" placeholder="Ex: Matemática" class="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2" />
-                <input id="newSubjectColor" type="color" value="#6366f1" class="w-12 h-10 rounded cursor-pointer border border-slate-300 dark:border-slate-700" />
-                <button id="addSubjectBtn" class="px-3 rounded-lg bg-indigo-600 text-white">+</button>
-              </div>
-            </div>
-          </div>
-
-          <div id="pomodoroConfig" class="grid sm:grid-cols-3 gap-4 mb-6">
             <label class="block">
               <span class="text-sm">Foco (min)</span>
-              <input id="focusMinutesInput" type="number" min="1" value="30" class="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2" />
+              <input id="focusInput" type="number" min="1" value="30" class="mt-1 w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800">
             </label>
             <label class="block">
               <span class="text-sm">Pausa (min)</span>
-              <input id="breakMinutesInput" type="number" min="1" value="10" class="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2" />
+              <input id="breakInput" type="number" min="1" value="10" class="mt-1 w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800">
             </label>
-            <label class="inline-flex items-center gap-2 mt-6">
-              <input id="autoTransitionInput" type="checkbox" checked class="h-4 w-4" />
-              <span class="text-sm">Transição automática</span>
-            </label>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-3 mb-4">
+            <input id="newSubjectName" type="text" placeholder="Nova matéria" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800" />
+            <input id="newSubjectColor" type="color" value="#6366f1" class="h-11 rounded-lg border border-slate-300 dark:border-slate-700" />
+            <button id="addSubjectBtn" class="px-3 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Adicionar Matéria</button>
           </div>
 
           <div class="text-center py-8 rounded-xl bg-slate-100 dark:bg-slate-800">
-            <p id="cycleLabel" class="text-sm uppercase tracking-wide text-slate-500 dark:text-slate-400">Foco</p>
-            <p id="timerDisplay" class="text-6xl font-bold tabular-nums my-2">30:00</p>
-            <p id="activeSubjectLabel" class="text-sm">Matéria atual: -</p>
+            <p id="cycleLabel" class="text-sm uppercase tracking-wide text-slate-500">FOCO</p>
+            <p id="timerText" class="text-6xl font-black tabular-nums">30:00</p>
+            <p id="motivation" class="text-sm mt-2 text-slate-500">Disciplina vence motivação.</p>
           </div>
 
-          <div class="flex flex-wrap justify-center gap-3 mt-6">
-            <button id="startBtn" class="px-5 py-2 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-500">Iniciar</button>
-            <button id="pauseBtn" class="px-5 py-2 rounded-lg bg-amber-500 text-white font-medium hover:bg-amber-400">Pausar</button>
-            <button id="resetBtn" class="px-5 py-2 rounded-lg bg-rose-600 text-white font-medium hover:bg-rose-500">Zerar</button>
+          <div class="mt-4 flex flex-wrap gap-3 justify-center">
+            <button id="startBtn" class="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold">Iniciar</button>
+            <button id="pauseBtn" class="px-4 py-2 rounded-lg bg-amber-500 text-white font-semibold">Pausar + Salvar</button>
+            <button id="resetBtn" class="px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold">Reset</button>
           </div>
         </article>
 
-        <article id="dashboardPanel" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-          <h2 class="text-xl font-semibold mb-4">Dashboard de Estudos</h2>
-          <div class="grid sm:grid-cols-3 gap-4 mb-6">
-            <div class="p-4 rounded-lg bg-slate-100 dark:bg-slate-800"><p class="text-xs">Hoje</p><p id="totalToday" class="text-2xl font-bold">0h 0m</p></div>
-            <div class="p-4 rounded-lg bg-slate-100 dark:bg-slate-800"><p class="text-xs">Semana</p><p id="totalWeek" class="text-2xl font-bold">0h 0m</p></div>
-            <div class="p-4 rounded-lg bg-slate-100 dark:bg-slate-800"><p class="text-xs">Mês</p><p id="totalMonth" class="text-2xl font-bold">0h 0m</p></div>
+        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <h2 class="text-xl font-bold mb-3">📅 Plano de Estudos (Quests)</h2>
+          <div class="grid sm:grid-cols-3 gap-3 mb-3">
+            <input id="taskTitle" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800" placeholder="Ex: Revisar geometria" />
+            <select id="taskDifficulty" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800">
+              <option value="40">Fácil (+40 XP)</option>
+              <option value="80">Médio (+80 XP)</option>
+              <option value="120">Difícil (+120 XP)</option>
+            </select>
+            <button id="addTaskBtn" class="px-3 py-2 rounded-lg bg-cyan-600 text-white font-semibold">Adicionar Quest</button>
           </div>
-          <div class="mb-6">
-            <h3 class="font-medium mb-2">Tempo por matéria</h3>
-            <div id="subjectBreakdown" class="space-y-2"></div>
+          <ul id="taskList" class="space-y-2"></ul>
+        </article>
+
+        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <h2 class="text-xl font-bold mb-3">🧠 Flashcards Inteligentes</h2>
+          <div class="grid sm:grid-cols-2 gap-3 mb-3">
+            <input id="flashFront" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800" placeholder="Pergunta" />
+            <input id="flashBack" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800" placeholder="Resposta" />
           </div>
-          <div>
-            <h3 class="font-medium mb-2">Últimos dias estudados</h3>
-            <ul id="historyList" class="space-y-2 max-h-56 overflow-auto"></ul>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button id="addFlashBtn" class="px-3 py-2 rounded-lg bg-violet-600 text-white font-semibold">Criar Flashcard</button>
+            <button id="showAnswerBtn" class="px-3 py-2 rounded-lg bg-slate-700 text-white font-semibold">Mostrar Resposta</button>
+          </div>
+          <div id="flashReview" class="p-4 rounded-lg bg-slate-100 dark:bg-slate-800 min-h-24 mb-2"></div>
+          <div class="flex flex-wrap gap-2">
+            <button data-grade="again" class="grade-btn px-3 py-1 rounded-lg bg-rose-600 text-white">Errei</button>
+            <button data-grade="hard" class="grade-btn px-3 py-1 rounded-lg bg-amber-500 text-white">Difícil</button>
+            <button data-grade="good" class="grade-btn px-3 py-1 rounded-lg bg-emerald-600 text-white">Bom</button>
+            <button data-grade="easy" class="grade-btn px-3 py-1 rounded-lg bg-indigo-600 text-white">Fácil</button>
           </div>
         </article>
       </section>
 
-      <aside id="sidePanel" class="space-y-6">
-        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-          <h2 class="text-xl font-semibold mb-2">Gamificação</h2>
-          <p id="xpLabel" class="text-3xl font-bold text-indigo-600">XP 0</p>
-          <p id="levelLabel" class="text-sm text-slate-500 dark:text-slate-400 mb-2">Nível 1</p>
-          <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-            <div id="xpBar" class="h-full bg-indigo-600" style="width:0%"></div>
+      <aside class="space-y-6">
+        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <h2 class="text-xl font-bold">🏆 Perfil Gamer</h2>
+          <p id="levelLabel" class="text-sm text-slate-500 mt-1">Nível 1</p>
+          <p id="xpLabel" class="text-3xl font-black text-indigo-600">XP 0</p>
+          <div class="w-full h-3 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-2">
+            <div id="xpBar" class="h-full bg-indigo-600" style="width: 0%"></div>
           </div>
-          <p id="xpNext" class="text-xs mt-2 text-slate-500 dark:text-slate-400">0 / 500 XP para o próximo nível</p>
+          <p id="nextLevelLabel" class="text-xs text-slate-500 mt-2">0 / 300 XP</p>
+          <div class="grid grid-cols-2 gap-2 mt-4 text-sm">
+            <div class="p-2 rounded bg-slate-100 dark:bg-slate-800">🔥 Streak: <span id="streakLabel">0</span></div>
+            <div class="p-2 rounded bg-slate-100 dark:bg-slate-800">⏱️ Hoje: <span id="todayLabel">0m</span></div>
+            <div class="p-2 rounded bg-slate-100 dark:bg-slate-800">📆 Semana: <span id="weekLabel">0m</span></div>
+            <div class="p-2 rounded bg-slate-100 dark:bg-slate-800">📚 Sessões: <span id="sessionsLabel">0</span></div>
+          </div>
         </article>
 
-        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-          <h2 class="text-xl font-semibold mb-3">Backup Local</h2>
+        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <h2 class="text-xl font-bold mb-3">🗺️ Progresso por Matéria</h2>
+          <div id="subjectStats" class="space-y-2"></div>
+        </article>
+
+        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <h2 class="text-xl font-bold mb-3">🎖️ Conquistas</h2>
+          <ul id="achievementList" class="space-y-2 text-sm"></ul>
+        </article>
+
+        <article class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <h2 class="text-xl font-bold mb-3">💾 Dados</h2>
           <div class="flex flex-col gap-2">
-            <button id="exportBtn" class="px-4 py-2 rounded-lg bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900">Exportar JSON</button>
-            <label class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-center cursor-pointer hover:bg-indigo-500">
-              Restaurar JSON
-              <input id="importInput" type="file" accept="application/json" class="hidden" />
+            <button id="exportBtn" class="px-3 py-2 rounded-lg bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900">Exportar JSON</button>
+            <label class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-center cursor-pointer">Importar JSON
+              <input id="importInput" type="file" accept="application/json" class="hidden">
             </label>
+            <button id="resetDataBtn" class="px-3 py-2 rounded-lg bg-rose-700 text-white">Apagar tudo</button>
           </div>
         </article>
       </aside>
@@ -130,201 +144,454 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = 'studyAssistantGameV1';
-      const THEME_KEY = 'studyAssistantTheme';
-      const MAX_HOURS = 10000;
-      const MAX_SECONDS = MAX_HOURS * 3600;
+      const KEY = 'studyforge_v2';
+      const THEME_KEY = 'studyforge_theme';
+      const LEVEL_BASE = 300;
 
-      // Estrutura inicial com Hierarquia
       const defaultData = {
         subjects: [
-          { id: 'root', name: 'Geral (Nível de Jogador)', color: '#6366f1', parentId: null },
-          { id: 'math', name: 'Matemática', color: '#ef4444', parentId: 'root' }
+          { id: 'geral', name: 'Geral', color: '#6366f1' },
+          { id: 'mat', name: 'Matemática', color: '#ef4444' }
         ],
         sessions: [],
-        settings: { focusMinutes: 30, breakMinutes: 10, autoTransition: true }
+        tasks: [],
+        flashcards: [],
+        xp: 0,
+        settings: { focus: 30, pause: 10 },
+        achievements: []
       };
 
-      // --- LÓGICA DE JOGO (RPG) ---
-      const GameEngine = {
-        getRanks(seconds) {
-          const percent = (seconds / MAX_SECONDS) * 100;
-          if (percent >= 100) return { rank: 'S+', title: 'Transcendental', color: 'text-yellow-400' };
-          if (percent >= 80) return { rank: 'S', title: 'Monarca', color: 'text-yellow-500' };
-          if (percent >= 60) return { rank: 'A', title: 'Mestre', color: 'text-purple-500' };
-          if (percent >= 40) return { rank: 'B', title: 'Especialista', color: 'text-blue-500' };
-          if (percent >= 20) return { rank: 'C', title: 'Veterano', color: 'text-green-500' };
-          if (percent >= 5) return { rank: 'D', title: 'Aprendiz', color: 'text-slate-400' };
-          return { rank: 'E', title: 'Novato', color: 'text-slate-500' };
-        },
-
-        // Soma tempo da matéria + todas as suas sub-matérias
-        getTotalTimeForSubject(subjectId, sessions, allSubjects) {
-          const childIds = this.getAllChildrenIds(subjectId, allSubjects);
-          const targets = [subjectId, ...childIds];
-          return sessions
-            .filter(s => targets.includes(s.subjectId))
-            .reduce((acc, s) => acc + (s.durationInSeconds || 0), 0);
-        },
-
-        getAllChildrenIds(parentId, allSubjects) {
-          let children = allSubjects.filter(s => s.parentId === parentId).map(s => s.id);
-          children.forEach(id => {
-            children = [...children, ...this.getAllChildrenIds(id, allSubjects)];
-          });
-          return children;
+      const load = () => {
+        try {
+          const raw = localStorage.getItem(KEY);
+          return raw ? JSON.parse(raw) : structuredClone(defaultData);
+        } catch {
+          return structuredClone(defaultData);
         }
       };
-
-      const Storage = {
-        load() {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return structuredClone(defaultData);
-          return JSON.parse(raw);
-        },
-        save(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-      };
+      const save = () => localStorage.setItem(KEY, JSON.stringify(state.data));
 
       const state = {
-        data: Storage.load(),
+        data: load(),
         running: false,
         mode: 'pomodoro',
         cycle: 'focus',
-        remainingSeconds: 0,
+        seconds: 0,
         freeSeconds: 0,
-        intervalId: null,
-        activeSessionStart: null,
-        sessionAccumulatedSeconds: 0,
-        selectedSubjectId: 'root'
+        flashIndex: 0,
+        flashShowingAnswer: false,
+        focusMode: false
       };
 
-      const el = {
-        // Elementos de UI (Mantenha os IDs do seu HTML original)
-        subjectSelect: document.getElementById('subjectSelect'),
-        timerDisplay: document.getElementById('timerDisplay'),
-        xpLabel: document.getElementById('xpLabel'),
-        levelLabel: document.getElementById('levelLabel'),
-        xpBar: document.getElementById('xpBar'),
-        xpNext: document.getElementById('xpNext'),
-        subjectBreakdown: document.getElementById('subjectBreakdown')
-        // ... adicione as referências dos botões aqui conforme seu HTML
+      const $ = (id) => document.getElementById(id);
+      const ui = {
+        themeBtn: $('themeBtn'), focusModeBtn: $('focusModeBtn'), rouletteBtn: $('rouletteBtn'),
+        subjectSelect: $('subjectSelect'), focusInput: $('focusInput'), breakInput: $('breakInput'),
+        newSubjectName: $('newSubjectName'), newSubjectColor: $('newSubjectColor'), addSubjectBtn: $('addSubjectBtn'),
+        cycleLabel: $('cycleLabel'), timerText: $('timerText'), motivation: $('motivation'),
+        startBtn: $('startBtn'), pauseBtn: $('pauseBtn'), resetBtn: $('resetBtn'),
+        taskTitle: $('taskTitle'), taskDifficulty: $('taskDifficulty'), addTaskBtn: $('addTaskBtn'), taskList: $('taskList'),
+        flashFront: $('flashFront'), flashBack: $('flashBack'), addFlashBtn: $('addFlashBtn'), showAnswerBtn: $('showAnswerBtn'), flashReview: $('flashReview'),
+        levelLabel: $('levelLabel'), xpLabel: $('xpLabel'), xpBar: $('xpBar'), nextLevelLabel: $('nextLevelLabel'),
+        streakLabel: $('streakLabel'), todayLabel: $('todayLabel'), weekLabel: $('weekLabel'), sessionsLabel: $('sessionsLabel'),
+        subjectStats: $('subjectStats'), achievementList: $('achievementList'),
+        exportBtn: $('exportBtn'), importInput: $('importInput'), resetDataBtn: $('resetDataBtn')
       };
 
-      // --- ENGINE DE ESTUDO ---
-      const StudyEngine = {
-        tick() {
-          if (!state.running) return;
-          if (state.mode === 'pomodoro') {
-            state.remainingSeconds--;
-            if (state.remainingSeconds <= 0) this.completeCycle();
-          } else {
-            state.freeSeconds++;
-          }
-          this.updateUI();
-        },
-
-        completeCycle() {
-          this.saveProgress();
-          state.cycle = state.cycle === 'focus' ? 'break' : 'focus';
-          state.remainingSeconds = state.cycle === 'focus' ? state.data.settings.focusMinutes * 60 : state.data.settings.breakMinutes * 60;
-          if (!state.data.settings.autoTransition) state.running = false;
-          UI.renderAll();
-        },
-
-        saveProgress() {
-          const elapsed = state.mode === 'pomodoro'
-            ? (state.data.settings.focusMinutes * 60)
-            : state.freeSeconds;
-
-          if (elapsed > 0) {
-            state.data.sessions.push({
-              date: new Date().toISOString(),
-              subjectId: state.selectedSubjectId,
-              durationInSeconds: elapsed
-            });
-            Storage.save(state.data);
-          }
-          state.freeSeconds = 0;
-        },
-
-        updateUI() {
-          const sec = state.mode === 'pomodoro' ? state.remainingSeconds : state.freeSeconds;
-          const mins = Math.floor(sec / 60);
+      const Utils = {
+        fmt(sec) {
+          const m = Math.floor(sec / 60);
           const s = sec % 60;
-          el.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+          return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        },
+        dateKey(date = new Date()) { return date.toISOString().slice(0, 10); },
+        minutesLabel(sec) { return `${Math.floor(sec / 60)}m`; },
+        addXP(value) { state.data.xp += value; unlockAchievements(); save(); renderAll(); }
+      };
+
+      const Stats = {
+        totalByDate(dateKey) {
+          return state.data.sessions.filter(s => s.date.startsWith(dateKey)).reduce((a, s) => a + s.duration, 0);
+        },
+        totalLastDays(days) {
+          const now = new Date();
+          return state.data.sessions.filter(s => {
+            const d = new Date(s.date);
+            return (now - d) <= days * 86400000;
+          }).reduce((a, s) => a + s.duration, 0);
+        },
+        streak() {
+          const days = new Set(state.data.sessions.map(s => s.date.slice(0, 10)));
+          let count = 0;
+          const d = new Date();
+          for (;;) {
+            const key = d.toISOString().slice(0, 10);
+            if (days.has(key)) {
+              count++;
+              d.setDate(d.getDate() - 1);
+            } else {
+              break;
+            }
+          }
+          return count;
+        },
+        subjectSeconds(subjectId) {
+          return state.data.sessions.filter(s => s.subjectId === subjectId).reduce((a, s) => a + s.duration, 0);
         }
       };
 
-      const UI = {
-        renderAll() {
-          this.renderGamification();
-          this.renderSubjects();
-          this.renderDashboard();
-        },
-
-        renderGamification() {
-          const totalSec = GameEngine.getTotalTimeForSubject('root', state.data.sessions, state.data.subjects);
-          const stats = GameEngine.getRanks(totalSec);
-          const progress = (totalSec / MAX_SECONDS) * 100;
-
-          el.xpLabel.innerHTML = `<span class="${stats.color}">${stats.rank}</span> - ${stats.title}`;
-          el.levelLabel.textContent = `Progresso Global: ${progress.toFixed(4)}%`;
-          el.xpBar.style.width = `${Math.min(100, progress)}%`;
-          el.xpNext.textContent = `${(MAX_HOURS - (totalSec / 3600)).toFixed(1)} horas para a Maestria Absoluta`;
-        },
-
-        renderSubjects() {
-          el.subjectSelect.innerHTML = '';
-          state.data.subjects.forEach(s => {
-            const time = GameEngine.getTotalTimeForSubject(s.id, state.data.sessions, state.data.subjects);
-            const rank = GameEngine.getRanks(time).rank;
-            const option = document.createElement('option');
-            option.value = s.id;
-            option.textContent = `[${rank}] ${s.name}`;
-            el.subjectSelect.append(option);
-          });
-        },
-
-        renderDashboard() {
-          el.subjectBreakdown.innerHTML = '';
-          state.data.subjects.forEach(s => {
-            const time = GameEngine.getTotalTimeForSubject(s.id, state.data.sessions, state.data.subjects);
-            const stats = GameEngine.getRanks(time);
-            const div = document.createElement('div');
-            div.className = 'mb-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border-l-4';
-            div.style.borderColor = s.color;
-            div.innerHTML = `
-              <div class="flex justify-between items-center">
-                <span class="font-bold">${s.name}</span>
-                <span class="${stats.color} font-black">${stats.rank}</span>
-              </div>
-              <div class="text-xs text-slate-500">${(time / 3600).toFixed(2)}h / 10.000h</div>
-              <div class="w-full bg-slate-200 h-1 mt-1 rounded-full overflow-hidden">
-                <div class="bg-indigo-500 h-full" style="width: ${(time / MAX_SECONDS) * 100}%"></div>
-              </div>
-            `;
-            el.subjectBreakdown.append(div);
-          });
+      function levelInfo(xp) {
+        let level = 1;
+        let needed = LEVEL_BASE;
+        let acc = xp;
+        while (acc >= needed) {
+          acc -= needed;
+          level++;
+          needed = Math.floor(needed * 1.2);
         }
+        return { level, progress: acc, needed };
+      }
+
+      function unlockAchievements() {
+        const unlock = (id, label) => {
+          if (!state.data.achievements.includes(id)) {
+            state.data.achievements.push(id);
+            alert(`🏅 Nova conquista: ${label}`);
+          }
+        };
+        if (state.data.sessions.length >= 1) unlock('first_session', 'Primeira Sessão');
+        if (Stats.totalLastDays(7) >= 3 * 3600) unlock('3h_week', '3 horas na semana');
+        if (Stats.streak() >= 3) unlock('streak_3', 'Streak de 3 dias');
+        if (state.data.flashcards.length >= 10) unlock('flash_10', '10 flashcards criados');
+        if (state.data.tasks.filter(t => t.done).length >= 5) unlock('task_5', '5 quests completas');
+      }
+
+      function renderSubjects() {
+        ui.subjectSelect.innerHTML = '';
+        state.data.subjects.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = s.name;
+          ui.subjectSelect.appendChild(opt);
+        });
+      }
+
+      function renderProfile() {
+        const xp = state.data.xp;
+        const { level, progress, needed } = levelInfo(xp);
+        const pct = Math.min(100, (progress / needed) * 100);
+        ui.levelLabel.textContent = `Nível ${level}`;
+        ui.xpLabel.textContent = `XP ${xp}`;
+        ui.nextLevelLabel.textContent = `${progress} / ${needed} XP`;
+        ui.xpBar.style.width = `${pct}%`;
+        ui.todayLabel.textContent = Utils.minutesLabel(Stats.totalByDate(Utils.dateKey()));
+        ui.weekLabel.textContent = Utils.minutesLabel(Stats.totalLastDays(7));
+        ui.streakLabel.textContent = Stats.streak();
+        ui.sessionsLabel.textContent = state.data.sessions.length;
+      }
+
+      function renderSubjectStats() {
+        ui.subjectStats.innerHTML = '';
+        const total = state.data.sessions.reduce((a, s) => a + s.duration, 0) || 1;
+        state.data.subjects.forEach(s => {
+          const sec = Stats.subjectSeconds(s.id);
+          const pct = Math.round((sec / total) * 100);
+          const row = document.createElement('div');
+          row.className = 'p-2 rounded bg-slate-100 dark:bg-slate-800';
+          row.innerHTML = `
+            <div class="flex justify-between text-sm"><span>${s.name}</span><span>${Utils.minutesLabel(sec)} (${pct}%)</span></div>
+            <div class="w-full h-2 bg-slate-300 dark:bg-slate-700 rounded mt-1 overflow-hidden">
+              <div class="h-full" style="width:${pct}%;background:${s.color}"></div>
+            </div>
+          `;
+          ui.subjectStats.appendChild(row);
+        });
+      }
+
+      function renderTasks() {
+        ui.taskList.innerHTML = '';
+        state.data.tasks.forEach(t => {
+          const li = document.createElement('li');
+          li.className = 'p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2';
+          li.innerHTML = `
+            <div>
+              <p class="font-semibold ${t.done ? 'line-through text-slate-400' : ''}">${t.title}</p>
+              <p class="text-xs text-slate-500">Recompensa: ${t.xp} XP</p>
+            </div>
+            <div class="flex gap-2">
+              <button data-id="${t.id}" class="complete-task px-2 py-1 rounded bg-emerald-600 text-white text-xs">Concluir</button>
+              <button data-id="${t.id}" class="delete-task px-2 py-1 rounded bg-rose-600 text-white text-xs">Excluir</button>
+            </div>
+          `;
+          ui.taskList.appendChild(li);
+        });
+      }
+
+      function dueFlashcards() {
+        const now = Date.now();
+        return state.data.flashcards.filter(f => !f.nextReview || f.nextReview <= now);
+      }
+
+      function renderFlash() {
+        const due = dueFlashcards();
+        if (!due.length) {
+          ui.flashReview.innerHTML = '<p class="text-sm text-slate-500">Sem revisão pendente. Crie mais flashcards 🚀</p>';
+          return;
+        }
+        if (state.flashIndex >= due.length) state.flashIndex = 0;
+        const card = due[state.flashIndex];
+        ui.flashReview.innerHTML = `
+          <p class="text-xs text-slate-500 mb-1">Card ${state.flashIndex + 1}/${due.length}</p>
+          <p class="font-semibold">${card.front}</p>
+          ${state.flashShowingAnswer ? `<p class="mt-2 text-emerald-600">${card.back}</p>` : ''}
+        `;
+      }
+
+      function renderAchievements() {
+        const map = {
+          first_session: '🎯 Primeira Sessão',
+          '3h_week': '📈 3h na semana',
+          streak_3: '🔥 Streak de 3 dias',
+          flash_10: '🧠 10 flashcards',
+          task_5: '✅ 5 quests completas'
+        };
+        ui.achievementList.innerHTML = Object.entries(map)
+          .map(([id, label]) => `<li class="p-2 rounded ${state.data.achievements.includes(id) ? 'bg-emerald-100 dark:bg-emerald-900/40' : 'bg-slate-100 dark:bg-slate-800 opacity-60'}">${label}</li>`)
+          .join('');
+      }
+
+      function renderTimer() {
+        if (state.mode === 'pomodoro') {
+          ui.timerText.textContent = Utils.fmt(state.seconds);
+          ui.cycleLabel.textContent = state.cycle === 'focus' ? 'FOCO' : 'PAUSA';
+        } else {
+          ui.timerText.textContent = Utils.fmt(state.freeSeconds);
+          ui.cycleLabel.textContent = 'LIVRE';
+        }
+      }
+
+      function renderAll() {
+        renderSubjects();
+        renderProfile();
+        renderSubjectStats();
+        renderTasks();
+        renderFlash();
+        renderAchievements();
+        renderTimer();
+      }
+
+      function saveSession(seconds) {
+        if (seconds <= 0) return;
+        state.data.sessions.push({
+          id: crypto.randomUUID(),
+          date: new Date().toISOString(),
+          subjectId: ui.subjectSelect.value || 'geral',
+          duration: seconds
+        });
+        Utils.addXP(Math.floor(seconds / 30));
+        unlockAchievements();
+      }
+
+      function resetTimerBase() {
+        state.data.settings.focus = Math.max(1, Number(ui.focusInput.value) || 30);
+        state.data.settings.pause = Math.max(1, Number(ui.breakInput.value) || 10);
+        state.seconds = (state.cycle === 'focus' ? state.data.settings.focus : state.data.settings.pause) * 60;
+      }
+
+      const tips = [
+        'Pequeno progresso diário vence maratona esporádica.',
+        'Sem distração agora = mais liberdade depois.',
+        'Revisão ativa é melhor que releitura passiva.',
+        'Pausa estratégica aumenta retenção.'
+      ];
+
+      setInterval(() => {
+        if (!state.running) return;
+        if (state.mode === 'pomodoro') {
+          state.seconds--;
+          if (state.seconds <= 0) {
+            if (state.cycle === 'focus') {
+              saveSession(state.data.settings.focus * 60);
+              Utils.addXP(35);
+            }
+            state.cycle = state.cycle === 'focus' ? 'break' : 'focus';
+            resetTimerBase();
+          }
+        } else {
+          state.freeSeconds++;
+        }
+        if (Math.random() < 0.04) ui.motivation.textContent = tips[Math.floor(Math.random() * tips.length)];
+        renderAll();
+      }, 1000);
+
+      $('modePomodoro').onclick = () => {
+        state.mode = 'pomodoro';
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('bg-indigo-600', 'text-white'));
+        $('modePomodoro').classList.add('bg-indigo-600', 'text-white');
+        resetTimerBase();
+        renderTimer();
+      };
+      $('modeFree').onclick = () => {
+        state.mode = 'free';
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('bg-indigo-600', 'text-white'));
+        $('modeFree').classList.add('bg-indigo-600', 'text-white');
+        renderTimer();
       };
 
-      // Inicialização e Eventos (Simplificado para o exemplo)
-      state.remainingSeconds = state.data.settings.focusMinutes * 60;
-      setInterval(() => StudyEngine.tick(), 1000);
-      document.getElementById('startBtn').onclick = () => { state.running = true; };
-      document.getElementById('pauseBtn').onclick = () => { state.running = false; StudyEngine.saveProgress(); UI.renderAll(); };
-      document.getElementById('addSubjectBtn').onclick = () => {
-        const name = document.getElementById('newSubjectInput').value;
-        const parentId = el.subjectSelect.value; // A matéria selecionada vira o "Pai"
-        if (name) {
-          state.data.subjects.push({ id: crypto.randomUUID(), name, color: '#6366f1', parentId });
-          Storage.save(state.data);
-          UI.renderAll();
+      ui.startBtn.onclick = () => { state.running = true; };
+      ui.pauseBtn.onclick = () => {
+        state.running = false;
+        if (state.mode === 'free' && state.freeSeconds > 0) {
+          saveSession(state.freeSeconds);
+          state.freeSeconds = 0;
         }
+        save();
+        renderAll();
+      };
+      ui.resetBtn.onclick = () => {
+        state.running = false;
+        state.cycle = 'focus';
+        state.freeSeconds = 0;
+        resetTimerBase();
+        renderAll();
       };
 
-      UI.renderAll();
-      StudyEngine.updateUI();
+      ui.addSubjectBtn.onclick = () => {
+        const name = ui.newSubjectName.value.trim();
+        if (!name) return;
+        state.data.subjects.push({ id: crypto.randomUUID(), name, color: ui.newSubjectColor.value });
+        ui.newSubjectName.value = '';
+        save();
+        renderAll();
+      };
+
+      ui.addTaskBtn.onclick = () => {
+        const title = ui.taskTitle.value.trim();
+        if (!title) return;
+        state.data.tasks.unshift({ id: crypto.randomUUID(), title, xp: Number(ui.taskDifficulty.value), done: false });
+        ui.taskTitle.value = '';
+        save();
+        renderTasks();
+      };
+
+      ui.taskList.onclick = (e) => {
+        const id = e.target.dataset.id;
+        if (!id) return;
+        const task = state.data.tasks.find(t => t.id === id);
+        if (!task) return;
+        if (e.target.classList.contains('complete-task') && !task.done) {
+          task.done = true;
+          Utils.addXP(task.xp);
+        }
+        if (e.target.classList.contains('delete-task')) {
+          state.data.tasks = state.data.tasks.filter(t => t.id !== id);
+        }
+        unlockAchievements();
+        save();
+        renderAll();
+      };
+
+      ui.addFlashBtn.onclick = () => {
+        const front = ui.flashFront.value.trim();
+        const back = ui.flashBack.value.trim();
+        if (!front || !back) return;
+        state.data.flashcards.push({ id: crypto.randomUUID(), front, back, interval: 1, nextReview: Date.now() });
+        ui.flashFront.value = '';
+        ui.flashBack.value = '';
+        Utils.addXP(20);
+        save();
+        renderAll();
+      };
+
+      ui.showAnswerBtn.onclick = () => {
+        state.flashShowingAnswer = true;
+        renderFlash();
+      };
+
+      document.querySelectorAll('.grade-btn').forEach(btn => {
+        btn.onclick = () => {
+          const due = dueFlashcards();
+          if (!due.length) return;
+          const card = due[state.flashIndex];
+          const g = btn.dataset.grade;
+          if (g === 'again') card.interval = 1;
+          if (g === 'hard') card.interval = Math.max(1, Math.floor(card.interval * 1.2));
+          if (g === 'good') card.interval = Math.max(2, Math.floor(card.interval * 2));
+          if (g === 'easy') card.interval = Math.max(3, Math.floor(card.interval * 3));
+          card.nextReview = Date.now() + card.interval * 86400000;
+          Utils.addXP(g === 'again' ? 5 : g === 'hard' ? 10 : g === 'good' ? 20 : 30);
+          state.flashShowingAnswer = false;
+          state.flashIndex++;
+          save();
+          renderAll();
+        };
+      });
+
+      ui.rouletteBtn.onclick = () => {
+        const idx = Math.floor(Math.random() * state.data.subjects.length);
+        ui.subjectSelect.value = state.data.subjects[idx].id;
+        ui.motivation.textContent = `🎲 Hoje você vai focar em: ${state.data.subjects[idx].name}`;
+      };
+
+      ui.themeBtn.onclick = () => {
+        document.documentElement.classList.toggle('dark');
+        localStorage.setItem(THEME_KEY, document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      };
+
+      ui.focusModeBtn.onclick = () => {
+        state.focusMode = !state.focusMode;
+        document.querySelectorAll('article').forEach((card, i) => {
+          if (!state.focusMode) {
+            card.classList.remove('hidden');
+            return;
+          }
+          if (i > 0) card.classList.add('hidden');
+        });
+      };
+
+      ui.exportBtn.onclick = () => {
+        const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'studyforge-backup.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      ui.importInput.onchange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            state.data = JSON.parse(String(reader.result));
+            save();
+            renderAll();
+          } catch {
+            alert('Arquivo inválido.');
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      ui.resetDataBtn.onclick = () => {
+        if (!confirm('Tem certeza que deseja apagar todos os dados?')) return;
+        state.data = structuredClone(defaultData);
+        state.running = false;
+        state.cycle = 'focus';
+        state.freeSeconds = 0;
+        resetTimerBase();
+        save();
+        renderAll();
+      };
+
+      if (localStorage.getItem(THEME_KEY) === 'dark') document.documentElement.classList.add('dark');
+      ui.focusInput.value = state.data.settings.focus;
+      ui.breakInput.value = state.data.settings.pause;
+      resetTimerBase();
+      unlockAchievements();
+      renderAll();
     })();
   </script>
 </body>
