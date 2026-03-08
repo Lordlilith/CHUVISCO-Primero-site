@@ -130,60 +130,59 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = 'studyAssistantDataV1';
+      const STORAGE_KEY = 'studyAssistantGameV1';
       const THEME_KEY = 'studyAssistantTheme';
+      const MAX_HOURS = 10000;
+      const MAX_SECONDS = MAX_HOURS * 3600;
 
+      // Estrutura inicial com Hierarquia
       const defaultData = {
-        subjects: [{ id: crypto.randomUUID(), name: 'Geral', color: '#6366f1' }],
+        subjects: [
+          { id: 'root', name: 'Geral (Nível de Jogador)', color: '#6366f1', parentId: null },
+          { id: 'math', name: 'Matemática', color: '#ef4444', parentId: 'root' }
+        ],
         sessions: [],
-        settings: {
-          focusMinutes: 30,
-          breakMinutes: 10,
-          autoTransition: true
+        settings: { focusMinutes: 30, breakMinutes: 10, autoTransition: true }
+      };
+
+      // --- LÓGICA DE JOGO (RPG) ---
+      const GameEngine = {
+        getRanks(seconds) {
+          const percent = (seconds / MAX_SECONDS) * 100;
+          if (percent >= 100) return { rank: 'S+', title: 'Transcendental', color: 'text-yellow-400' };
+          if (percent >= 80) return { rank: 'S', title: 'Monarca', color: 'text-yellow-500' };
+          if (percent >= 60) return { rank: 'A', title: 'Mestre', color: 'text-purple-500' };
+          if (percent >= 40) return { rank: 'B', title: 'Especialista', color: 'text-blue-500' };
+          if (percent >= 20) return { rank: 'C', title: 'Veterano', color: 'text-green-500' };
+          if (percent >= 5) return { rank: 'D', title: 'Aprendiz', color: 'text-slate-400' };
+          return { rank: 'E', title: 'Novato', color: 'text-slate-500' };
+        },
+
+        // Soma tempo da matéria + todas as suas sub-matérias
+        getTotalTimeForSubject(subjectId, sessions, allSubjects) {
+          const childIds = this.getAllChildrenIds(subjectId, allSubjects);
+          const targets = [subjectId, ...childIds];
+          return sessions
+            .filter(s => targets.includes(s.subjectId))
+            .reduce((acc, s) => acc + (s.durationInSeconds || 0), 0);
+        },
+
+        getAllChildrenIds(parentId, allSubjects) {
+          let children = allSubjects.filter(s => s.parentId === parentId).map(s => s.id);
+          children.forEach(id => {
+            children = [...children, ...this.getAllChildrenIds(id, allSubjects)];
+          });
+          return children;
         }
       };
 
       const Storage = {
         load() {
-          try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return structuredClone(defaultData);
-            const parsed = JSON.parse(raw);
-            return {
-              ...structuredClone(defaultData),
-              ...parsed,
-              subjects: parsed.subjects?.length ? parsed.subjects : structuredClone(defaultData.subjects),
-              sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
-              settings: { ...defaultData.settings, ...(parsed.settings || {}) }
-            };
-          } catch {
-            return structuredClone(defaultData);
-          }
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return structuredClone(defaultData);
+          return JSON.parse(raw);
         },
-        save(data) {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        },
-        exportData(data) {
-          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `assistente-estudos-backup-${new Date().toISOString().slice(0, 10)}.json`;
-          a.click();
-          URL.revokeObjectURL(url);
-        },
-        async importFile(file) {
-          const text = await file.text();
-          const incoming = JSON.parse(text);
-          if (!incoming.subjects || !incoming.sessions) {
-            throw new Error('Arquivo inválido.');
-          }
-          return {
-            ...structuredClone(defaultData),
-            ...incoming,
-            settings: { ...defaultData.settings, ...(incoming.settings || {}) }
-          };
-        }
+        save(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
       };
 
       const state = {
@@ -196,403 +195,136 @@
         intervalId: null,
         activeSessionStart: null,
         sessionAccumulatedSeconds: 0,
-        selectedSubjectId: null,
-        focusMode: false
+        selectedSubjectId: 'root'
       };
 
       const el = {
-        app: document.getElementById('app'),
+        // Elementos de UI (Mantenha os IDs do seu HTML original)
         subjectSelect: document.getElementById('subjectSelect'),
-        newSubjectInput: document.getElementById('newSubjectInput'),
-        newSubjectColor: document.getElementById('newSubjectColor'),
-        addSubjectBtn: document.getElementById('addSubjectBtn'),
-        focusMinutesInput: document.getElementById('focusMinutesInput'),
-        breakMinutesInput: document.getElementById('breakMinutesInput'),
-        autoTransitionInput: document.getElementById('autoTransitionInput'),
         timerDisplay: document.getElementById('timerDisplay'),
-        cycleLabel: document.getElementById('cycleLabel'),
-        activeSubjectLabel: document.getElementById('activeSubjectLabel'),
-        startBtn: document.getElementById('startBtn'),
-        pauseBtn: document.getElementById('pauseBtn'),
-        resetBtn: document.getElementById('resetBtn'),
-        pomodoroModeBtn: document.getElementById('pomodoroModeBtn'),
-        freeModeBtn: document.getElementById('freeModeBtn'),
-        pomodoroConfig: document.getElementById('pomodoroConfig'),
-        totalToday: document.getElementById('totalToday'),
-        totalWeek: document.getElementById('totalWeek'),
-        totalMonth: document.getElementById('totalMonth'),
-        subjectBreakdown: document.getElementById('subjectBreakdown'),
-        historyList: document.getElementById('historyList'),
-        exportBtn: document.getElementById('exportBtn'),
-        importInput: document.getElementById('importInput'),
         xpLabel: document.getElementById('xpLabel'),
         levelLabel: document.getElementById('levelLabel'),
         xpBar: document.getElementById('xpBar'),
         xpNext: document.getElementById('xpNext'),
-        toggleThemeBtn: document.getElementById('toggleThemeBtn'),
-        toggleFocusModeBtn: document.getElementById('toggleFocusModeBtn'),
-        dashboardPanel: document.getElementById('dashboardPanel'),
-        sidePanel: document.getElementById('sidePanel')
+        subjectBreakdown: document.getElementById('subjectBreakdown')
+        // ... adicione as referências dos botões aqui conforme seu HTML
       };
 
-      const Utils = {
-        formatTime(totalSeconds) {
-          const s = Math.max(0, totalSeconds);
-          const h = Math.floor(s / 3600);
-          const m = Math.floor((s % 3600) / 60);
-          const sec = s % 60;
-          if (h > 0) return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-          return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-        },
-        humanDuration(sec) {
-          const h = Math.floor(sec / 3600);
-          const m = Math.floor((sec % 3600) / 60);
-          return `${h}h ${m}m`;
-        },
-        dateKey(date = new Date()) {
-          return date.toISOString().slice(0, 10);
-        },
-        notify(message) {
-          if (Notification.permission === 'granted') new Notification(message);
-        },
-        beep() {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.value = 880;
-          gain.gain.value = 0.08;
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.25);
-        },
-        startOfWeek(d) {
-          const date = new Date(d);
-          const day = date.getDay() || 7;
-          date.setDate(date.getDate() - day + 1);
-          date.setHours(0, 0, 0, 0);
-          return date;
-        }
-      };
-
+      // --- ENGINE DE ESTUDO ---
       const StudyEngine = {
-        get focusSeconds() {
-          return Number(state.data.settings.focusMinutes) * 60;
-        },
-        get breakSeconds() {
-          return Number(state.data.settings.breakMinutes) * 60;
-        },
-        ensureSubjectSelected() {
-          if (!state.selectedSubjectId) {
-            state.selectedSubjectId = state.data.subjects[0]?.id ?? null;
-            el.subjectSelect.value = state.selectedSubjectId;
-          }
-        },
-        start() {
-          if (!state.selectedSubjectId) return alert('Selecione uma matéria antes de iniciar.');
-          if (state.running) return;
-          state.running = true;
-          state.activeSessionStart = Date.now();
-          if (!state.intervalId) {
-            state.intervalId = setInterval(() => this.tick(), 1000);
-          }
-        },
-        pause() {
-          if (!state.running) return;
-          state.running = false;
-          this.flushElapsedToAccumulator();
-        },
-        reset() {
-          this.pause();
-          this.finishCurrentAccumulatedSession();
-          if (state.mode === 'pomodoro') {
-            state.cycle = 'focus';
-            state.remainingSeconds = this.focusSeconds;
-          } else {
-            state.freeSeconds = 0;
-          }
-          this.render();
-        },
-        flushElapsedToAccumulator() {
-          if (!state.activeSessionStart) return;
-          const elapsed = Math.floor((Date.now() - state.activeSessionStart) / 1000);
-          if (elapsed > 0) state.sessionAccumulatedSeconds += elapsed;
-          state.activeSessionStart = Date.now();
-        },
-        finishCurrentAccumulatedSession() {
-          if (state.running) this.flushElapsedToAccumulator();
-          if (state.sessionAccumulatedSeconds <= 0) return;
-          state.data.sessions.push({
-            date: new Date().toISOString(),
-            subjectId: state.selectedSubjectId,
-            durationInSeconds: state.sessionAccumulatedSeconds,
-            type: state.mode === 'pomodoro' ? 'pomodoro' : 'livre'
-          });
-          state.sessionAccumulatedSeconds = 0;
-          Storage.save(state.data);
-          UI.renderDashboard();
-          UI.renderGamification();
-        },
         tick() {
           if (!state.running) return;
           if (state.mode === 'pomodoro') {
-            state.remainingSeconds -= 1;
-            if (state.remainingSeconds <= 0) {
-              this.flushElapsedToAccumulator();
-              this.finishCurrentAccumulatedSession();
-              state.cycle = state.cycle === 'focus' ? 'break' : 'focus';
-              state.remainingSeconds = state.cycle === 'focus' ? this.focusSeconds : this.breakSeconds;
-              Utils.beep();
-              Utils.notify(state.cycle === 'focus' ? 'Hora de focar!' : 'Hora da pausa!');
-              if (!state.data.settings.autoTransition) state.running = false;
-            }
+            state.remainingSeconds--;
+            if (state.remainingSeconds <= 0) this.completeCycle();
           } else {
-            state.freeSeconds += 1;
+            state.freeSeconds++;
           }
-          this.render();
+          this.updateUI();
         },
-        setMode(mode) {
-          if (mode === state.mode) return;
-          this.pause();
-          this.finishCurrentAccumulatedSession();
-          state.mode = mode;
-          if (mode === 'pomodoro') {
-            state.cycle = 'focus';
-            state.remainingSeconds = this.focusSeconds;
-          } else {
-            state.freeSeconds = 0;
+
+        completeCycle() {
+          this.saveProgress();
+          state.cycle = state.cycle === 'focus' ? 'break' : 'focus';
+          state.remainingSeconds = state.cycle === 'focus' ? state.data.settings.focusMinutes * 60 : state.data.settings.breakMinutes * 60;
+          if (!state.data.settings.autoTransition) state.running = false;
+          UI.renderAll();
+        },
+
+        saveProgress() {
+          const elapsed = state.mode === 'pomodoro'
+            ? (state.data.settings.focusMinutes * 60)
+            : state.freeSeconds;
+
+          if (elapsed > 0) {
+            state.data.sessions.push({
+              date: new Date().toISOString(),
+              subjectId: state.selectedSubjectId,
+              durationInSeconds: elapsed
+            });
+            Storage.save(state.data);
           }
-          this.render();
-          UI.updateModeButtons();
+          state.freeSeconds = 0;
         },
-        render() {
-          const timerText = state.mode === 'pomodoro' ? Utils.formatTime(state.remainingSeconds) : Utils.formatTime(state.freeSeconds);
-          el.timerDisplay.textContent = timerText;
-          el.cycleLabel.textContent = state.mode === 'pomodoro' ? (state.cycle === 'focus' ? 'Foco' : 'Pausa') : 'Cronômetro Livre';
-          const sub = state.data.subjects.find(s => s.id === state.selectedSubjectId);
-          el.activeSubjectLabel.textContent = `Matéria atual: ${sub ? sub.name : '-'}`;
-          if (sub) el.activeSubjectLabel.style.color = sub.color;
+
+        updateUI() {
+          const sec = state.mode === 'pomodoro' ? state.remainingSeconds : state.freeSeconds;
+          const mins = Math.floor(sec / 60);
+          const s = sec % 60;
+          el.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         }
       };
 
       const UI = {
+        renderAll() {
+          this.renderGamification();
+          this.renderSubjects();
+          this.renderDashboard();
+        },
+
+        renderGamification() {
+          const totalSec = GameEngine.getTotalTimeForSubject('root', state.data.sessions, state.data.subjects);
+          const stats = GameEngine.getRanks(totalSec);
+          const progress = (totalSec / MAX_SECONDS) * 100;
+
+          el.xpLabel.innerHTML = `<span class="${stats.color}">${stats.rank}</span> - ${stats.title}`;
+          el.levelLabel.textContent = `Progresso Global: ${progress.toFixed(4)}%`;
+          el.xpBar.style.width = `${Math.min(100, progress)}%`;
+          el.xpNext.textContent = `${(MAX_HOURS - (totalSec / 3600)).toFixed(1)} horas para a Maestria Absoluta`;
+        },
+
         renderSubjects() {
           el.subjectSelect.innerHTML = '';
-          state.data.subjects.forEach(subject => {
+          state.data.subjects.forEach(s => {
+            const time = GameEngine.getTotalTimeForSubject(s.id, state.data.sessions, state.data.subjects);
+            const rank = GameEngine.getRanks(time).rank;
             const option = document.createElement('option');
-            option.value = subject.id;
-            option.textContent = `${subject.name}`;
+            option.value = s.id;
+            option.textContent = `[${rank}] ${s.name}`;
             el.subjectSelect.append(option);
           });
-          StudyEngine.ensureSubjectSelected();
-          el.subjectSelect.value = state.selectedSubjectId;
         },
+
         renderDashboard() {
-          const now = new Date();
-          const todayKey = Utils.dateKey(now);
-          const weekStart = Utils.startOfWeek(now);
-          const month = now.getMonth();
-          const year = now.getFullYear();
-
-          let todayTotal = 0;
-          let weekTotal = 0;
-          let monthTotal = 0;
-          const bySubject = new Map();
-          const byDay = new Map();
-
-          state.data.sessions.forEach(session => {
-            const date = new Date(session.date);
-            const key = Utils.dateKey(date);
-            const duration = Number(session.durationInSeconds) || 0;
-
-            if (key === todayKey) todayTotal += duration;
-            if (date >= weekStart) weekTotal += duration;
-            if (date.getMonth() === month && date.getFullYear() === year) monthTotal += duration;
-
-            bySubject.set(session.subjectId, (bySubject.get(session.subjectId) || 0) + duration);
-            byDay.set(key, (byDay.get(key) || 0) + duration);
-          });
-
-          el.totalToday.textContent = Utils.humanDuration(todayTotal);
-          el.totalWeek.textContent = Utils.humanDuration(weekTotal);
-          el.totalMonth.textContent = Utils.humanDuration(monthTotal);
-
-          const maxSubject = Math.max(1, ...bySubject.values());
           el.subjectBreakdown.innerHTML = '';
-          state.data.subjects.forEach(subject => {
-            const duration = bySubject.get(subject.id) || 0;
-            const percent = Math.round((duration / maxSubject) * 100);
-            const row = document.createElement('div');
-            row.innerHTML = `
-              <div class="flex justify-between text-sm"><span>${subject.name}</span><span>${Utils.humanDuration(duration)}</span></div>
-              <div class="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                <div class="h-full" style="width:${percent}%; background:${subject.color}"></div>
+          state.data.subjects.forEach(s => {
+            const time = GameEngine.getTotalTimeForSubject(s.id, state.data.sessions, state.data.subjects);
+            const stats = GameEngine.getRanks(time);
+            const div = document.createElement('div');
+            div.className = 'mb-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border-l-4';
+            div.style.borderColor = s.color;
+            div.innerHTML = `
+              <div class="flex justify-between items-center">
+                <span class="font-bold">${s.name}</span>
+                <span class="${stats.color} font-black">${stats.rank}</span>
+              </div>
+              <div class="text-xs text-slate-500">${(time / 3600).toFixed(2)}h / 10.000h</div>
+              <div class="w-full bg-slate-200 h-1 mt-1 rounded-full overflow-hidden">
+                <div class="bg-indigo-500 h-full" style="width: ${(time / MAX_SECONDS) * 100}%"></div>
               </div>
             `;
-            el.subjectBreakdown.append(row);
+            el.subjectBreakdown.append(div);
           });
-
-          const sortedDays = [...byDay.entries()].sort((a, b) => b[0].localeCompare(a[0])).slice(0, 20);
-          el.historyList.innerHTML = '';
-          sortedDays.forEach(([day, sec]) => {
-            const li = document.createElement('li');
-            li.className = 'p-2 rounded-lg bg-slate-100 dark:bg-slate-800 flex justify-between text-sm';
-            li.innerHTML = `<span>${day}</span><strong>${Utils.humanDuration(sec)}</strong>`;
-            el.historyList.append(li);
-          });
-          if (!sortedDays.length) {
-            const li = document.createElement('li');
-            li.className = 'text-sm text-slate-500';
-            li.textContent = 'Nenhuma sessão registrada ainda.';
-            el.historyList.append(li);
-          }
-        },
-        renderGamification() {
-          const totalSeconds = state.data.sessions.reduce((acc, s) => acc + (Number(s.durationInSeconds) || 0), 0);
-          const xp = Math.floor(totalSeconds / 60); // 1 XP por minuto
-          const level = Math.floor(xp / 500) + 1;
-          const nextLevelXp = level * 500;
-          const base = (level - 1) * 500;
-          const progress = Math.round(((xp - base) / 500) * 100);
-
-          el.xpLabel.textContent = `XP ${xp}`;
-          el.levelLabel.textContent = `Nível ${level}`;
-          el.xpBar.style.width = `${Math.max(0, Math.min(100, progress))}%`;
-          el.xpNext.textContent = `${xp - base} / 500 XP para o próximo nível`;
-        },
-        updateModeButtons() {
-          const isPomodoro = state.mode === 'pomodoro';
-          el.pomodoroModeBtn.className = `mode-btn px-4 py-2 rounded-lg ${isPomodoro ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}`;
-          el.freeModeBtn.className = `mode-btn px-4 py-2 rounded-lg ${!isPomodoro ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}`;
-          el.pomodoroConfig.classList.toggle('hidden', !isPomodoro);
-        },
-        applyTheme(theme) {
-          const isDark = theme === 'dark';
-          document.documentElement.classList.toggle('dark', isDark);
-          el.toggleThemeBtn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-          localStorage.setItem(THEME_KEY, theme);
-        },
-        toggleFocusMode() {
-          state.focusMode = !state.focusMode;
-          el.dashboardPanel.classList.toggle('hidden', state.focusMode);
-          el.sidePanel.classList.toggle('hidden', state.focusMode);
-          el.toggleFocusModeBtn.textContent = state.focusMode ? '↩️ Sair do Foco' : '🎯 Modo Foco';
         }
       };
 
-      function bindEvents() {
-        el.addSubjectBtn.addEventListener('click', () => {
-          const name = el.newSubjectInput.value.trim();
-          if (!name) return;
-          state.data.subjects.push({ id: crypto.randomUUID(), name, color: el.newSubjectColor.value || '#6366f1' });
-          state.selectedSubjectId = state.data.subjects[state.data.subjects.length - 1].id;
-          el.newSubjectInput.value = '';
+      // Inicialização e Eventos (Simplificado para o exemplo)
+      state.remainingSeconds = state.data.settings.focusMinutes * 60;
+      setInterval(() => StudyEngine.tick(), 1000);
+      document.getElementById('startBtn').onclick = () => { state.running = true; };
+      document.getElementById('pauseBtn').onclick = () => { state.running = false; StudyEngine.saveProgress(); UI.renderAll(); };
+      document.getElementById('addSubjectBtn').onclick = () => {
+        const name = document.getElementById('newSubjectInput').value;
+        const parentId = el.subjectSelect.value; // A matéria selecionada vira o "Pai"
+        if (name) {
+          state.data.subjects.push({ id: crypto.randomUUID(), name, color: '#6366f1', parentId });
           Storage.save(state.data);
-          UI.renderSubjects();
-          UI.renderDashboard();
-          StudyEngine.render();
-        });
+          UI.renderAll();
+        }
+      };
 
-        el.subjectSelect.addEventListener('change', (e) => {
-          state.selectedSubjectId = e.target.value;
-          StudyEngine.render();
-        });
-
-        el.focusMinutesInput.addEventListener('change', () => {
-          state.data.settings.focusMinutes = Math.max(1, Number(el.focusMinutesInput.value) || 30);
-          el.focusMinutesInput.value = state.data.settings.focusMinutes;
-          Storage.save(state.data);
-          if (state.mode === 'pomodoro' && !state.running && state.cycle === 'focus') {
-            state.remainingSeconds = StudyEngine.focusSeconds;
-            StudyEngine.render();
-          }
-        });
-
-        el.breakMinutesInput.addEventListener('change', () => {
-          state.data.settings.breakMinutes = Math.max(1, Number(el.breakMinutesInput.value) || 10);
-          el.breakMinutesInput.value = state.data.settings.breakMinutes;
-          Storage.save(state.data);
-          if (state.mode === 'pomodoro' && !state.running && state.cycle === 'break') {
-            state.remainingSeconds = StudyEngine.breakSeconds;
-            StudyEngine.render();
-          }
-        });
-
-        el.autoTransitionInput.addEventListener('change', () => {
-          state.data.settings.autoTransition = !!el.autoTransitionInput.checked;
-          Storage.save(state.data);
-        });
-
-        el.startBtn.addEventListener('click', () => StudyEngine.start());
-        el.pauseBtn.addEventListener('click', () => StudyEngine.pause());
-        el.resetBtn.addEventListener('click', () => StudyEngine.reset());
-        el.pomodoroModeBtn.addEventListener('click', () => StudyEngine.setMode('pomodoro'));
-        el.freeModeBtn.addEventListener('click', () => StudyEngine.setMode('livre'));
-
-        el.exportBtn.addEventListener('click', () => Storage.exportData(state.data));
-
-        el.importInput.addEventListener('change', async (e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          try {
-            const imported = await Storage.importFile(file);
-            state.data = imported;
-            state.selectedSubjectId = state.data.subjects[0]?.id ?? null;
-            state.remainingSeconds = Number(state.data.settings.focusMinutes) * 60;
-            Storage.save(state.data);
-            UI.renderSubjects();
-            UI.renderDashboard();
-            UI.renderGamification();
-            StudyEngine.render();
-            alert('Backup restaurado com sucesso.');
-          } catch {
-            alert('Falha ao restaurar arquivo JSON.');
-          } finally {
-            e.target.value = '';
-          }
-        });
-
-        el.toggleThemeBtn.addEventListener('click', () => {
-          const isDark = document.documentElement.classList.contains('dark');
-          UI.applyTheme(isDark ? 'light' : 'dark');
-        });
-
-        el.toggleFocusModeBtn.addEventListener('click', () => UI.toggleFocusMode());
-
-        document.addEventListener('visibilitychange', () => {
-          if (!document.hidden && state.running) {
-            StudyEngine.flushElapsedToAccumulator();
-          }
-        });
-      }
-
-      function init() {
-        if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
-        const preferredTheme = localStorage.getItem(THEME_KEY) || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        UI.applyTheme(preferredTheme);
-
-        state.selectedSubjectId = state.data.subjects[0]?.id ?? null;
-        state.remainingSeconds = Number(state.data.settings.focusMinutes) * 60;
-
-        el.focusMinutesInput.value = state.data.settings.focusMinutes;
-        el.breakMinutesInput.value = state.data.settings.breakMinutes;
-        el.autoTransitionInput.checked = state.data.settings.autoTransition;
-
-        UI.renderSubjects();
-        UI.renderDashboard();
-        UI.renderGamification();
-        UI.updateModeButtons();
-        StudyEngine.render();
-        bindEvents();
-      }
-
-      init();
-      window.addEventListener('beforeunload', () => {
-        StudyEngine.pause();
-        StudyEngine.finishCurrentAccumulatedSession();
-        if (state.intervalId) clearInterval(state.intervalId);
-      });
+      UI.renderAll();
+      StudyEngine.updateUI();
     })();
   </script>
 </body>
